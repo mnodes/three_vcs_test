@@ -3,117 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebXR Cube AR</title>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOExporter.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DDSLoader.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/KTXLoader.js"></script> -->
+    <title>Web AR with Three.js</title>
 </head>
 <body>
-    <script>
-        let scene, camera, renderer;
-        let cube;
-
-        async function init() {
-            // Setup Three.js scene
-            scene = new THREE.Scene();
-
-            // Setup camera
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 1.6, 0);
-
-            // Setup renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // Create cube
-            const geometry = new THREE.BoxGeometry();
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-
-            // Setup WebXR
-            navigator.xr.addEventListener('devicechange', checkXRSupport);
-            checkXRSupport();
-
-            // Add event listeners
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function checkXRSupport() {
-            if (navigator.xr) {
-                navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-                    if (supported) {
-                        const enterARText = document.createElement('div');
-                        enterARText.textContent = 'EnterAR';
-                        enterARText.style.position = 'absolute';
-                        enterARText.style.top = '20px';
-                        enterARText.style.left = '20px';
-                        enterARText.style.color = '#ffffff';
-                        document.body.appendChild(enterARText);
-                        enterARText.addEventListener('click', onEnterAR);
-                    } else {
-                        console.log('Immersive AR is not supported');
-                    }
-                });
-            } else {
-                console.log('WebXR not supported');
-            }
-        }
-
-        async function onEnterAR() {
-            const session = await navigator.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test']
-            });
-            session.addEventListener('end', onXRSessionEnd);
-
-            // Attach renderer to XRSession
-            const glLayer = new XRWebGLLayer(session, renderer);
-            session.updateRenderState({ baseLayer: glLayer });
-
-            // Add cube to XR session
-            scene.add(cube);
-
-            // Initialize hit test source
-            session.requestReferenceSpace('viewer').then((referenceSpace) => {
-                session.requestHitTestSource({ space: referenceSpace }).then((hitTestSource) => {
-                    session.addEventListener('select', onSelect);
-                    animate(hitTestSource, session);
-                });
-            });
-        }
-
-        function animate(hitTestSource, session) {
-            renderer.setAnimationLoop(() => {
-                renderer.render(scene, camera);
-                updateCubePosition(hitTestSource, session);
-            });
-        }
-
-        function updateCubePosition(hitTestSource, session) {
-            const hitTestResults = session.requestHitTest(hitTestSource);
-            hitTestResults.then((results) => {
-                if (results.length > 0) {
-                    const hitPose = results[0].getPose(camera);
-                    cube.position.setFromMatrixPosition(hitPose.transform.matrix);
-                }
-            });
-        }
-
-        function onXRSessionEnd() {
-            renderer.setAnimationLoop(null);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        init();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/RGBELoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/pmrem/PMREMGenerator.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/pmrem/PMREMCubeUVPacker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/pmrem/PMREMGenerator.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/webxr/VRButton.js"></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
