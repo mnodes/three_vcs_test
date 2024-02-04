@@ -3,16 +3,31 @@ window.addEventListener('DOMContentLoaded', init);
 function init() {
     // Set up Three.js scene
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
     // Create a cube
     const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
     const cubeMaterial = new THREE.MeshNormalMaterial();
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
+    cube.position.set(1, 1, 1);
     scene.add(cube);
+
+
+    // Set up the WebGLRenderer, which handles rendering to the session's base layer.
+    const renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        preserveDrawingBuffer: true,
+        canvas: canvas,
+        context: gl
+    });
+    renderer.autoClear = false;
+    
+    // The API directly updates the camera matrices.
+    // Disable matrix auto updates so three.js doesn't attempt
+    // to handle the matrices independently.
+    const camera = new THREE.PerspectiveCamera();
+    camera.matrixAutoUpdate = false;
 
     // Set up AR
     navigator.xr.requestDevice().then(xrDevice => {
