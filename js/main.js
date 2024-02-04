@@ -37,9 +37,6 @@ function animate() {
     // Rotate the plane around the x-axis
     plane.rotation.x += 0.01; // Adjust rotation speed here
 
-    // Rotate the plane around the y-axis
-    plane.rotation.y += 0.01; // Adjust rotation speed here
-
     // Render the scene
     renderer.render(scene, camera);
 
