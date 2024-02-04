@@ -6,8 +6,8 @@
     <title>WebXR Cube AR</title>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOExporter.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOExporter.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DDSLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/KTXLoader.js"></script>
 </head>
@@ -47,10 +47,14 @@
             if (navigator.xr) {
                 navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
                     if (supported) {
-                        const button = document.createElement('button');
-                        button.innerHTML = 'Enter AR';
-                        button.addEventListener('click', onEnterAR);
-                        document.body.appendChild(button);
+                        const enterARText = document.createElement('div');
+                        enterARText.textContent = 'EnterAR';
+                        enterARText.style.position = 'absolute';
+                        enterARText.style.top = '20px';
+                        enterARText.style.left = '20px';
+                        enterARText.style.color = '#ffffff';
+                        document.body.appendChild(enterARText);
+                        enterARText.addEventListener('click', onEnterAR);
                     } else {
                         console.log('Immersive AR is not supported');
                     }
