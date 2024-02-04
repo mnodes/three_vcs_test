@@ -1,49 +1,41 @@
-let scene, camera, renderer, cube;
+// Import necessary modules
+import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
-init();
+// Initialize Three.js scene, renderer, camera, and controls
+const scene = new THREE.Scene();
+const renderer = new THREE.WebGLRenderer();
+renderer.xr.enabled = true; // Enable XR rendering
+document.body.appendChild(renderer.domElement);
 
-function init() {
-    scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
-    camera.position.set(0, 1.6, 0); // Set camera position at eye level
+// Create an AR button
+const arButton = ARButton.createButton(renderer);
+document.body.appendChild(arButton);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true; // Enable WebXR
+// Function to create the AR scene
+async function createScene() {
+    // Load a 3D model (replace with your model URL)
+    const loader = new GLTFLoader();
+    const model = await loader.load('model.glb');
+    model.scene.scale.set(0.1, 0.1, 0.1);
+    scene.add(model.scene);
 
-    document.body.appendChild(renderer.domElement);
+    // Start the AR session
+    const session = await navigator.xr.requestSession('immersive-ar');
+    renderer.xr.setSession(session);
 
-    // Create a white cube
-    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-
-    // Handle XR session
-    document.getElementById('start-ar-button').addEventListener('click', () => {
-        if (renderer.xr.isPresenting) {
-            renderer.xr.end();
-        } else {
-            renderer.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test'],
-                optionalFeatures: ['dom-overlay'],
-            }).then((session) => {
-                session.addEventListener('end', () => {
-                    // Reset cube position when AR session ends
-                    cube.position.set(0, 0, 0);
-                });
-                renderer.xr.setReferenceSpaceType('local');
-                renderer.xr.setSession(session);
-            });
-        }
+    // Update rendering for AR
+    renderer.xr.addEventListener('sessionstart', () => {
+        camera.projectionMatrix = session.projectionMatrix;
     });
 
-    animate();
-}
-
-function animate() {
+    // Render loop
     renderer.setAnimationLoop(() => {
         renderer.render(scene, camera);
     });
 }
+
+// Start the AR experience when the button is clicked
+arButton.addEventListener('click', createScene);
