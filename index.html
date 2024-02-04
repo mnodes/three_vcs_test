@@ -14,7 +14,7 @@
 <body>
     <script>
         let scene, camera, renderer;
-        let cube;
+        let cube1, cube2;
 
         async function init() {
             // Setup Three.js scene
@@ -29,11 +29,16 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // Create cube
+            // Create cubes
             const geometry = new THREE.BoxGeometry();
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
+            const material1 = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const material2 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            cube1 = new THREE.Mesh(geometry, material1);
+            cube2 = new THREE.Mesh(geometry, material2);
+            cube1.position.set(-0.5, 0, -1); // Position of the first cube
+            cube2.position.set(0.5, 0, -1);  // Position of the second cube
+            scene.add(cube1);
+            scene.add(cube2);
 
             // Setup WebXR
             navigator.xr.addEventListener('devicechange', checkXRSupport);
@@ -74,8 +79,9 @@
             const glLayer = new XRWebGLLayer(session, renderer);
             session.updateRenderState({ baseLayer: glLayer });
 
-            // Add cube to XR session
-            scene.add(cube);
+            // Add cubes to XR session
+            scene.add(cube1);
+            scene.add(cube2);
 
             // Initialize hit test source
             session.requestReferenceSpace('viewer').then((referenceSpace) => {
@@ -98,7 +104,8 @@
             hitTestResults.then((results) => {
                 if (results.length > 0) {
                     const hitPose = results[0].getPose(camera);
-                    cube.position.setFromMatrixPosition(hitPose.transform.matrix);
+                    cube1.position.setFromMatrixPosition(hitPose.transform.matrix);
+                    cube2.position.setFromMatrixPosition(hitPose.transform.matrix);
                 }
             });
         }
