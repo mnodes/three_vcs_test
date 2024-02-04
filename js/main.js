@@ -1,48 +1,49 @@
-// Set up the scene, camera, and renderer
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+let scene, camera, renderer, cube;
 
-// Create a box geometry to make the plane thicker
-const geometry = new THREE.BoxGeometry(5, 0.2, 5); // Width, Height, Depth
+init();
 
-// Create a basic material with white color
-const material = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+function init() {
+    scene = new THREE.Scene();
 
-// Combine geometry and material into a mesh
-const plane = new THREE.Mesh(geometry, material);
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
+    camera.position.set(0, 1.6, 0); // Set camera position at eye level
 
-// Add the plane to the scene
-scene.add(plane);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true; // Enable WebXR
 
-// Position the plane
-plane.position.y = 0.1; // Adjust position to half of the height to keep it above the ground
+    document.body.appendChild(renderer.domElement);
 
-// Position the camera
-camera.position.z = 5;
+    // Create a white cube
+    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
 
-// Add directional light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(1, 1, 1).normalize();
-scene.add(directionalLight);
+    // Handle XR session
+    document.getElementById('start-ar-button').addEventListener('click', () => {
+        if (renderer.xr.isPresenting) {
+            renderer.xr.end();
+        } else {
+            renderer.xr.requestSession('immersive-ar', {
+                requiredFeatures: ['hit-test'],
+                optionalFeatures: ['dom-overlay'],
+            }).then((session) => {
+                session.addEventListener('end', () => {
+                    // Reset cube position when AR session ends
+                    cube.position.set(0, 0, 0);
+                });
+                renderer.xr.setReferenceSpaceType('local');
+                renderer.xr.setSession(session);
+            });
+        }
+    });
 
-// Add ambient light
-const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
-scene.add(ambientLight);
-
-// Define a function to animate the scene
-function animate() {
-    // Rotate the plane around the x-axis
-    plane.rotation.x += 0.01; // Adjust rotation speed here
-
-    // Render the scene
-    renderer.render(scene, camera);
-
-    // Request the next frame
-    requestAnimationFrame(animate);
+    animate();
 }
 
-// Start the animation loop
-animate();
+function animate() {
+    renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+    });
+}
